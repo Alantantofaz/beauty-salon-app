@@ -1,5 +1,7 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
 from database import Database
 
 db = Database()
@@ -9,13 +11,12 @@ class MenuScreen(Screen):
 
 class AddClienteScreen(Screen):
     def add_cliente(self, nome, telefone, procedimento, valor_pago, metodo_pagamento, lucro):
-        db.add_cliente(nome, telefone, procedimento, float(valor_pago), metodo_pagamento, float(lucro))
-        self.manager.current = 'menu'
+        db.add_cliente(nome, telefone, procedimento, valor_pago, metodo_pagamento, lucro)
+        self.update_cliente_list()
 
-class ListClienteScreen(Screen):
-    def on_enter(self):
-        clientes = db.list_clientes()
+    def update_cliente_list(self):
         self.ids.cliente_list.clear_widgets()
+        clientes = db.get_all_clientes()
         for cliente in clientes:
             self.ids.cliente_list.add_widget(Label(text=f"{cliente[0]} - {cliente[1]} - {cliente[2]} - {cliente[3]} - R$ {cliente[4]} - {cliente[5]} - R$ {cliente[6]}"))
 
@@ -28,6 +29,16 @@ class ProfitScreen(Screen):
     def calculate_lucro(self, data_inicio, data_fim):
         lucro = db.calculate_lucro(data_inicio, data_fim)
         self.ids.lucro_result.text = f'Lucro: R$ {lucro:.2f}'
+
+class ListClienteScreen(Screen):
+    def on_enter(self):
+        self.update_cliente_list()
+
+    def update_cliente_list(self):
+        self.ids.cliente_list.clear_widgets()
+        clientes = db.get_all_clientes()
+        for cliente in clientes:
+            self.ids.cliente_list.add_widget(Label(text=f"{cliente[0]} - {cliente[1]} - {cliente[2]} - {cliente[3]} - R$ {cliente[4]} - {cliente[5]} - R$ {cliente[6]}"))
 
 class ClienteApp(App):
     def build(self):
